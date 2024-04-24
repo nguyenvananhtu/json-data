@@ -1,42 +1,38 @@
 <?php
 
 $host = 'localhost';
-$dbname = 'nguyenvananhtu_qlgv';
+$dbname = 'nguyenvananhtu_QLGV';
 $username = 'root';
 $password = '';
 
 
 try {
-
+    // Kết nối đến cơ sở dữ liệu
     $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $stmt = $conn->prepare('SELECT * from nhanvien');
-    $stmt->execute();
-    $mang = array();
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $id = $row['MaNV'];
-        $tennv = $row['TenNV'];
-        $sdt = $row['SDT'];
-        array_push($mang, new NhanVien($id, $tennv, $sdt));
-    }
+    // Truy vấn lấy thông tin từ bảng User
+    $stmtUser = $conn->prepare('SELECT * FROM nguyenvananhtu_User');
+    $stmtUser->execute();
+    $users = $stmtUser->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode($mang);
+    // Truy vấn lấy thông tin từ bảng Giáo viên
+    $stmtTeacher = $conn->prepare('SELECT * FROM nguyenvananhtu_GiaoVien');
+    $stmtTeacher->execute();
+    $teachers = $stmtTeacher->fetchAll(PDO::FETCH_ASSOC);
+
+    // Chuẩn bị dữ liệu để trả về dưới dạng JSON
+    $data = array(
+        'users' => $users,
+        'teachers' => $teachers
+    );
+
+    // Trả về dữ liệu dưới dạng JSON
+    echo json_encode($data);
 
 } catch (PDOException $pe) {
+    // Xử lý lỗi nếu có
     die ("Could not connect to the database $dbname :" . $pe->getMessage());
 }
 
-class NhanVien
-{
-    public $id;
-    public $Tennv;
-    public $Sodt;
-
-    public function __construct($i, $t, $s)
-    {
-        $this->id = $i;
-        $this->Tennv = $t;
-        $this->Sodt = $s;
-    }
-}
 ?>
